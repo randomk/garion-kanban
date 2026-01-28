@@ -596,3 +596,29 @@ def handle_delete_task(data):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
+
+# Webhook para notificar Telegram
+import urllib.request
+
+TELEGRAM_WEBHOOK = os.environ.get('TELEGRAM_WEBHOOK_URL', '')
+
+def notify_telegram(message):
+    if not TELEGRAM_WEBHOOK:
+        return
+    try:
+        data = json.dumps({"text": message}).encode('utf-8')
+        req = urllib.request.Request(TELEGRAM_WEBHOOK, data=data, headers={'Content-Type': 'application/json'})
+        urllib.request.urlopen(req, timeout=5)
+    except Exception as e:
+        print(f"Telegram notify error: {e}")
+
+# Override create to notify
+_original_create_task = create_task
+def create_task_with_notify(title, description='', status='todo', priority='medium', source='app'):
+    task = _original_create_task(title, description, status, priority, source)
+    if source == 'app':  # Only notify for WebUI tasks
+        emoji = {'high': '🔴', 'medium': '🟡', 'low': '🟢'}.get(priority, '⚪')
+        notify_telegram(f"📋 Nova task no Kanban!\n\n{emoji} *{title}*\n{description}\n\nStatus: {status.upper()}")
+    return task
+
+create_task = create_task_with_notify
