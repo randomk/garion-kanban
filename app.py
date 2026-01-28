@@ -12,6 +12,9 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 DB_PATH = os.environ.get('DB_PATH', '/tmp/kanban.db')
 
+# Ensure directory exists
+os.makedirs(os.path.dirname(DB_PATH) if os.path.dirname(DB_PATH) else '.', exist_ok=True)
+
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row

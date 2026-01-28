@@ -6,7 +6,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENV DB_PATH=/data/kanban.db
+ENV DB_PATH=/tmp/kanban.db
 
 EXPOSE 5000
 
